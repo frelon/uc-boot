@@ -19,14 +19,26 @@ mkfs.vfat -F 16 -n EFI "${loopdev}p1"
 mkfs.ext4 -L SYSTEM "${loopdev}p2"
 partx -u "${loopdev}"
 
-workdir=/mnt/efi
+# Install EFI
+efidir=/mnt/efi
 srcdir="${img_mnt}"
 
-mkdir -p "${workdir}"
-mount "${loopdev}p1" "${workdir}"
+mkdir -p "${efidir}"
+mount "${loopdev}p1" "${efidir}"
 
-cp -r "${srcdir}"/boot/* ${workdir}/
+cp -r "${srcdir}"/boot/* ${efidir}/
+
+umount "${efidir}"
+
+# Install dummy rootfs
+workdir=/mnt/work
+
+mkdir -p "${workdir}"
+mount "${loopdev}p2" "${workdir}"
+
+cp -r "${srcdir}"/* ${workdir}/
 
 umount "${workdir}"
+
 
 losetup -D "${loopdev}"
