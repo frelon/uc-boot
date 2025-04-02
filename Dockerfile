@@ -1,13 +1,58 @@
 FROM registry.opensuse.org/opensuse/tumbleweed:latest AS build
 
-RUN zypper --non-interactive --gpg-auto-import-keys install --no-recommends systemd-boot udev efibootmgr kernel-default
+RUN zypper --non-interactive --gpg-auto-import-keys install --no-recommends \
+      patterns-base-base \
+      aaa_base-extras \
+      acl \
+      chrony \
+      dracut \
+      fipscheck \
+      pam_pwquality \
+      iputils \
+      issue-generator \
+      vim-small \
+      haveged \
+      less \
+      parted \
+      gptfdisk \
+      iproute2 \
+      openssh \
+      rsync \
+      dosfstools \
+      lsof \
+      live-add-yast-repos \
+      zypper-needs-restarting \
+      combustion \
+      grub2 \
+      grub2-branding-openSUSE \
+      grub2-x86_64-efi \
+      shim \
+      kernel-default-base \
+      btrfsprogs \
+      btrfsmaintenance \
+      snapper \
+      firewalld \
+      podman \
+      git \
+      NetworkManager && \
+    zypper clean --all
 
-COPY cmdline /usr/lib/kernel/cmdline
+RUN source /etc/os-release && \
+    rm -rf /boot/* && rm -rf /boot/.* && \
+    kernel_version=$(ls /usr/lib/modules | head -n1) && \
+    mkdir -p /boot/${ID}/${kernel_version} && \
+    dracut -f --no-hostonly "/boot/${ID}/${kernel_version}/initrd" "${kernel_version}"  && \
+    cp "/usr/lib/modules/${kernel_version}/vmlinuz" "/boot/${ID}/${kernel_version}/vmlinuz" && \
+    grub2-editenv /boot/grubenv set entries="active 1 2" && \
+    mkdir -p /boot/loader/entries && \
+    grub2-editenv /boot/loader/entries/active.conf set display_name="openSUSE Tumbleweed" linux="/${ID}/${kernel_version}/vmlinuz" initrd="/${ID}/${kernel_version}/initrd" cmdline="root=LABEL=SYSTEM rw" && \
+    grub2-editenv /boot/loader/entries/1.conf set display_name="Snapshot 1" linux="/${ID}/${kernel_version}/vmlinuz" initrd="/${ID}/${kernel_version}/initrd" cmdline="root=LABEL=SYSTEM ro" && \
+    grub2-editenv /boot/loader/entries/2.conf set display_name="Snapshot 2" linux="/${ID}/${kernel_version}/vmlinuz" initrd="/${ID}/${kernel_version}/initrd" cmdline="root=LABEL=SYSTEM ro rd.shell rd.break=pre-pivot" && \
+    mkdir -p /boot/EFI/BOOT && \
+    cp /usr/share/efi/x86_64/MokManager.efi /boot/EFI/BOOT/ && \
+    cp /usr/share/efi/x86_64/shim.efi /boot/EFI/BOOT/bootx64.efi && \
+    cp /usr/share/grub2/x86_64-efi/grub.efi /boot/EFI/BOOT/
 
-RUN rm -rf /boot/* && \
-    rm -rf /boot/.* && \
-    SYSTEMD_ESP_PATH=/boot SYSTEMD_RELAX_ESP_CHECKS=yes bootctl --graceful --no-variables install && \
-    SYSTEMD_ESP_PATH=/boot SYSTEMD_RELAX_ESP_CHECKS=yes kernel-install add-all && \
-    sed -i 's/\/boot//g' /boot/loader/entries/*.conf
+COPY grub.cfg /boot/EFI/BOOT/grub.cfg
 
 CMD ["bash"]

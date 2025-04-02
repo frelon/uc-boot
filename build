@@ -40,5 +40,4 @@ cp -r "${srcdir}"/* ${workdir}/
 
 umount "${workdir}"
 
-
 losetup -D "${loopdev}"
