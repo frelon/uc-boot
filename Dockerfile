@@ -37,6 +37,8 @@ RUN zypper --non-interactive --gpg-auto-import-keys install --no-recommends \
       NetworkManager && \
     zypper clean --all
 
+COPY fstab /etc/fstab
+
 RUN source /etc/os-release && \
     rm -rf /boot/* && rm -rf /boot/.* && \
     kernel_version=$(ls /usr/lib/modules | head -n1) && \
