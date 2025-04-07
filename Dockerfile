@@ -43,11 +43,11 @@ RUN source /etc/os-release && \
     mkdir -p /boot/${ID}/${kernel_version} && \
     dracut -f --no-hostonly "/boot/${ID}/${kernel_version}/initrd" "${kernel_version}"  && \
     cp "/usr/lib/modules/${kernel_version}/vmlinuz" "/boot/${ID}/${kernel_version}/vmlinuz" && \
-    grub2-editenv /boot/grubenv set entries="active 1 2" && \
+    grub2-editenv /boot/grubenv set entries="active snap_1 snap_2" && \
     mkdir -p /boot/loader/entries && \
     grub2-editenv /boot/loader/entries/active.conf set display_name="openSUSE Tumbleweed" linux="/${ID}/${kernel_version}/vmlinuz" initrd="/${ID}/${kernel_version}/initrd" cmdline="root=LABEL=SYSTEM rw" && \
-    grub2-editenv /boot/loader/entries/1.conf set display_name="Snapshot 1" linux="/${ID}/${kernel_version}/vmlinuz" initrd="/${ID}/${kernel_version}/initrd" cmdline="root=LABEL=SYSTEM ro" && \
-    grub2-editenv /boot/loader/entries/2.conf set display_name="Snapshot 2" linux="/${ID}/${kernel_version}/vmlinuz" initrd="/${ID}/${kernel_version}/initrd" cmdline="root=LABEL=SYSTEM ro rd.shell rd.break=pre-pivot" && \
+    grub2-editenv /boot/loader/entries/snap_1.conf set display_name="Snapshot 1 - Read Only" linux="/${ID}/${kernel_version}/vmlinuz" initrd="/${ID}/${kernel_version}/initrd" cmdline="root=LABEL=SYSTEM ro" && \
+    grub2-editenv /boot/loader/entries/snap_2.conf set display_name="Snapshot 2 - break pre-pivot" linux="/${ID}/${kernel_version}/vmlinuz" initrd="/${ID}/${kernel_version}/initrd" cmdline="root=LABEL=SYSTEM ro rd.shell rd.break=pre-pivot" && \
     mkdir -p /boot/EFI/BOOT && \
     cp /usr/share/efi/x86_64/MokManager.efi /boot/EFI/BOOT/ && \
     cp /usr/share/efi/x86_64/shim.efi /boot/EFI/BOOT/bootx64.efi && \
